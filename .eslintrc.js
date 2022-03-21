@@ -15,5 +15,5 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint', 'prettier'],
-  rules: { 'no-console': 1 },
+  rules: {},
 };

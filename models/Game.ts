@@ -2,18 +2,17 @@ import mongoose from 'mongoose';
 
 const GameSchema = new mongoose.Schema({
   white: {
-    player: { type: String, required: true },
-    time: { type: Number, required: true },
-    required: true,
+    player: { type: String },
+    timeUsed: { type: Number },
   },
   black: {
-    player: { type: String, required: true },
-    time: { type: Number, required: true },
-    required: true,
+    player: { type: String },
+    timeUsed: { type: Number },
   },
-  board: { type: Map, required: true },
+  board: { type: Map },
   scoreSheet: { type: Array },
-  clock: { type: Date, required: true },
+  time: { type: Number },
+  increment: { type: Number },
 });
 
 const Game = mongoose.model('Game', GameSchema);

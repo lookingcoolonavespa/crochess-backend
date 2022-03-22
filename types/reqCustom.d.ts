@@ -1,4 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Request } from 'express';
+import { Board } from './types';
 
 declare global {
   namespace Express {
@@ -8,18 +10,7 @@ declare global {
       increment?: number;
       gameId?: string;
       color?: 'white' | 'black';
+      board?: Board;
     }
   }
 }
-
-// export interface GameCreateReq extends Request {
-//   player: string;
-//   time: number;
-//   increment: number;
-// }
-
-// export interface GameBeginReq extends Request {
-//   player: string;
-//   gameId: string;
-//   color: 'white' | 'black';
-// }

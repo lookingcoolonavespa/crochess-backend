@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { HydratedDocument } from 'mongoose';
 import Game from '../models/Game';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { getTime } from 'date-fns';
@@ -38,17 +39,15 @@ export function beginGame(req: Request, res: Response, next: NextFunction) {
   );
 }
 
-export async function updateGame(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export async function updateGame(req: Request, res: Response) {
   const color = req.color as 'white' | 'black';
   const otherColor = req.color === 'white' ? 'black' : 'white';
 
   const currentTime = getTime(new Date());
 
-  const game: GameInterface | null = await Game.findById(req.gameId);
+  const game: HydratedDocument<GameInterface> | null = await Game.findById(
+    req.gameId
+  );
   if (!game) {
     return res.status(400).send('game not found');
   }
@@ -68,5 +67,7 @@ export async function updateGame(
   };
   game.board = req.board as Board;
 
-  game.save();
+  const updatedGame = await game.save();
+
+  return res.json(updatedGame);
 }

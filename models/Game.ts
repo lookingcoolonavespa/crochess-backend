@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
+import { GameInterface } from '../types/interfaces';
 
-const GameSchema = new mongoose.Schema({
+const GameSchema = new Schema<GameInterface>({
   white: {
     player: { type: String },
     timeUsed: { type: Number },
@@ -10,11 +11,11 @@ const GameSchema = new mongoose.Schema({
     timeUsed: { type: Number },
   },
   board: { type: Map },
-  scoreSheet: { type: Array },
+  scoreSheet: [{ type: String }],
   time: { type: Number },
   increment: { type: Number },
 });
 
-const Game = mongoose.model('Game', GameSchema);
+const Game = model<GameInterface>('Game', GameSchema);
 
 export default Game;

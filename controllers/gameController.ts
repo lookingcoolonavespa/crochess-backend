@@ -1,10 +1,9 @@
-import { Response, NextFunction } from 'express';
-import { GameCreateReq, GameBeginReq } from '../types/reqCustom';
+import { Request, Response, NextFunction } from 'express';
 import Game from '../models/Game';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 
 export async function createGame(
-  req: GameCreateReq,
+  req: Request,
   res: Response,
   next: NextFunction
 ) {
@@ -22,15 +21,11 @@ export async function createGame(
   return res.json(game);
 }
 
-export function beginGame(
-  req: GameBeginReq,
-  res: Response,
-  next: NextFunction
-) {
+export function beginGame(req: Request, res: Response, next: NextFunction) {
   Game.findByIdAndUpdate(
     req.gameId,
     {
-      [req.color]: { player: req.player },
+      [req.color as string]: { player: req.player },
     },
     (err, game) => {
       if (err) return next(err);

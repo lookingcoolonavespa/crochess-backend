@@ -1,11 +1,13 @@
+import http from 'http';
 import express from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
 import gameRouter from './routes/gameRouter';
-import WebSocket from 'ws';
+import { Server as SocketServer } from 'socket.io';
 
 const app = express();
-const ws = new WebSocket.Server();
+const server = http.createServer(app);
+const io = new SocketServer(server);
 
 // mongoose connection
 mongoose.connect(process.env.URI as string);
@@ -14,12 +16,6 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-app.use((req, res, next) => {
-  // allow access to websocket server in routes
-  req.ws = ws;
-  return next();
-});
 
 app.use((req, res, next) => {
   // Website you wish to allow to connect
@@ -48,4 +44,4 @@ app.use((req, res, next) => {
 app.use('/games', gameRouter);
 
 const portNo = 8000;
-app.listen(portNo, () => console.log(`server running on port ${portNo}`));
+server.listen(portNo, () => console.log(`listening on ${portNo}`));

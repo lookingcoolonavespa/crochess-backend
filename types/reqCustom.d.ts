@@ -12,7 +12,6 @@ declare global {
       gameId?: string;
       color?: 'white' | 'black';
       board?: Board;
-      ws?: WebSocketServer;
     }
   }
 }

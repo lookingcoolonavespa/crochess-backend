@@ -5,7 +5,6 @@ import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { getTime } from 'date-fns';
 import { GameInterface } from '../types/interfaces';
 import { Board } from '../types/types';
-import { WebSocketServer } from 'ws';
 
 export async function createGame(
   req: Request,
@@ -71,14 +70,4 @@ export async function updateGame(req: Request, res: Response) {
   const updatedGame = await game.save();
 
   return res.json(updatedGame);
-}
-
-export function getLocalGames(req: Request, res: Response) {
-  const ws = req.ws;
-
-  ws?.once('connection', function (wss: WebSocketServer) {
-    wss.on('event', function incoming(data: any) {
-      console.log(data);
-    });
-  });
 }

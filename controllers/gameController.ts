@@ -5,6 +5,7 @@ import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { getTime } from 'date-fns';
 import { GameInterface } from '../types/interfaces';
 import { Board } from '../types/types';
+import { WebSocketServer } from 'ws';
 
 export async function createGame(
   req: Request,
@@ -13,12 +14,12 @@ export async function createGame(
 ) {
   const color = getWhiteOrBlack();
   const game = new Game({
-    [color]: { player: req.player },
-    time: req.time,
-    increment: req.increment,
+    [color]: { player: req.ip },
+    time: req.body.time,
+    increment: req.body.increment,
   });
-
-  await game.save((err: unknown) => {
+  console.log(game);
+  game.save((err: unknown) => {
     if (err) return next(err);
   });
 
@@ -27,9 +28,9 @@ export async function createGame(
 
 export function beginGame(req: Request, res: Response, next: NextFunction) {
   Game.findByIdAndUpdate(
-    req.gameId,
+    req.body.gameId,
     {
-      [req.color as string]: { player: req.player },
+      [req.body.color as string]: { player: req.body.player },
     },
     (err, game) => {
       if (err) return next(err);
@@ -40,13 +41,13 @@ export function beginGame(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function updateGame(req: Request, res: Response) {
-  const color = req.color as 'white' | 'black';
-  const otherColor = req.color === 'white' ? 'black' : 'white';
+  const color = req.body.color as 'white' | 'black';
+  const otherColor = req.body.color === 'white' ? 'black' : 'white';
 
   const currentTime = getTime(new Date());
 
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
-    req.gameId
+    req.body.gameId
   );
   if (!game) {
     return res.status(400).send('game not found');
@@ -65,9 +66,19 @@ export async function updateGame(req: Request, res: Response) {
     ...game[otherColor],
     turnStart: currentTime,
   };
-  game.board = req.board as Board;
+  game.board = req.body.board as Board;
 
   const updatedGame = await game.save();
 
   return res.json(updatedGame);
+}
+
+export function getLocalGames(req: Request, res: Response) {
+  const ws = req.ws;
+
+  ws?.once('connection', function (wss: WebSocketServer) {
+    wss.on('event', function incoming(data: any) {
+      console.log(data);
+    });
+  });
 }

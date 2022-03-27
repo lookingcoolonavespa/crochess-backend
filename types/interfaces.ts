@@ -14,3 +14,10 @@ export interface GameInterface {
   time: number;
   increment: number;
 }
+
+export interface GameSeekInterface {
+  color: 'white' | 'black' | 'random';
+  time: number;
+  increment: number;
+  seeker: string;
+}

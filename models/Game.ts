@@ -17,5 +17,4 @@ const GameSchema = new Schema<GameInterface>({
 });
 
 const Game = model<GameInterface>('Game', GameSchema);
-
 export default Game;

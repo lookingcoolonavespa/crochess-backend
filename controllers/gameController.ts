@@ -1,31 +1,30 @@
-import { Request, Response, NextFunction } from 'express';
 import { HydratedDocument } from 'mongoose';
 import Game from '../models/Game';
-import getWhiteOrBlack from '../utils/getWhiteOrBlack';
+import GameSeek from '../models/GameSeek';
 import { getTime } from 'date-fns';
 import { GameInterface } from '../types/interfaces';
-import { Board } from '../types/types';
+import { Board, MiddleWare } from '../types/types';
 
-export async function createGame(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const color = getWhiteOrBlack();
-  const game = new Game({
-    [color]: { player: req.ip },
+export const getGameSeeks: MiddleWare = async (req, res) => {
+  const games = await GameSeek.find({});
+
+  return res.json(games);
+};
+
+export const createGameSeek: MiddleWare = async (req, res, next) => {
+  const seek = new GameSeek({
+    color: req.body.color || 'random',
     time: req.body.time,
     increment: req.body.increment,
   });
-  console.log(game);
-  game.save((err: unknown) => {
+  seek.save((err: unknown) => {
     if (err) return next(err);
   });
 
-  return res.json(game);
-}
+  return res.json(seek);
+};
 
-export function beginGame(req: Request, res: Response, next: NextFunction) {
+export const beginGame: MiddleWare = (req, res, next) => {
   Game.findByIdAndUpdate(
     req.body.gameId,
     {
@@ -37,9 +36,9 @@ export function beginGame(req: Request, res: Response, next: NextFunction) {
       return res.json(game);
     }
   );
-}
+};
 
-export async function updateGame(req: Request, res: Response) {
+export const updateGame: MiddleWare = async (req, res) => {
   const color = req.body.color as 'white' | 'black';
   const otherColor = req.body.color === 'white' ? 'black' : 'white';
 
@@ -70,4 +69,4 @@ export async function updateGame(req: Request, res: Response) {
   const updatedGame = await game.save();
 
   return res.json(updatedGame);
-}
+};

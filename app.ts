@@ -9,10 +9,35 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketServer(server);
 
+io.of('games').on('connection', (socket) => {
+  console.log('user connected, ', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected, ', socket.id);
+  });
+});
+
 // mongoose connection
 mongoose.connect(process.env.URI as string);
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => {
+  const gamesChangeStream = db.collection('games').watch();
+
+  gamesChangeStream.on('change', (change) => {
+    switch (change.operationType) {
+      case 'insert': {
+        const game = change.fullDocument;
+        io.of('games').emit('newGame', game);
+        break;
+      }
+
+      case 'delete': {
+        io.of('games').emit('deletedGame', change.documentKey._id);
+      }
+    }
+  });
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

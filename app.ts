@@ -27,9 +27,9 @@ mongoose.connect(process.env.URI as string);
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
-  const gamesChangeStream = db.collection('games').watch();
+  const gameSeeksChangeStream = db.collection('gameseeks').watch();
 
-  gamesChangeStream.on('change', (change) => {
+  gameSeeksChangeStream.on('change', (change) => {
     switch (change.operationType) {
       case 'insert': {
         const game = change.fullDocument;

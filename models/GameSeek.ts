@@ -6,6 +6,7 @@ const GameSeekSchema = new Schema<GameSeekInterface>({
   time: { type: Number, required: true },
   increment: { type: Number, required: true },
   seeker: { type: String, required: true },
+  gameType: { type: String, required: true },
 });
 
 const GameSeek = model<GameSeekInterface>('GameSeek', GameSeekSchema);

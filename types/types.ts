@@ -7,3 +7,5 @@ export type MiddleWare = (
   res: Response,
   next: NextFunction
 ) => void;
+
+export type GameType = 'bullet' | 'blitz' | 'rapid' | 'classical';

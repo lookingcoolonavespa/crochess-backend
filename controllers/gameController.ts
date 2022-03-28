@@ -16,6 +16,8 @@ export const createGameSeek: MiddleWare = async (req, res, next) => {
     color: req.body.color || 'random',
     time: req.body.time,
     increment: req.body.increment,
+    seeker: req.body.seeker,
+    gameType: req.body.gameType,
   });
   seek.save((err: unknown) => {
     if (err) return next(err);

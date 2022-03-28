@@ -1,4 +1,4 @@
-import { Board } from './types';
+import { Board, GameType } from './types';
 
 interface Player {
   player: string;
@@ -20,4 +20,5 @@ export interface GameSeekInterface {
   time: number;
   increment: number;
   seeker: string;
+  gameType: GameType;
 }

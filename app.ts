@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import 'dotenv/config';
 import gameRouter from './routes/gameRouter';
 import { Server as SocketServer } from 'socket.io';
+import GameSeek from './models/GameSeek';
 
 const app = express();
 const server = http.createServer(app);
@@ -14,10 +15,14 @@ const io = new SocketServer(server, {
   },
 });
 
-io.of('games').on('connection', (socket) => {
+io.of('games').on('connection', async (socket) => {
   console.log('user connected, ', socket.id);
+  // const deletedCount = await GameSeek.deleteMany({});
+  // console.log(deletedCount);
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
+    const deleted = await GameSeek.findOneAndDelete({ seeker: socket.id });
+    console.log(deleted);
     console.log('user disconnected, ', socket.id);
   });
 });

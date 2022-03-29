@@ -8,7 +8,7 @@ import GameSeek from './models/GameSeek';
 
 const app = express();
 const server = http.createServer(app);
-const io = new SocketServer(server, {
+export const io = new SocketServer(server, {
   cors: {
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -21,8 +21,7 @@ io.of('games').on('connection', async (socket) => {
   // console.log(deletedCount);
 
   socket.on('disconnect', async () => {
-    const deleted = await GameSeek.findOneAndDelete({ seeker: socket.id });
-    console.log(deleted);
+    await GameSeek.findOneAndDelete({ seeker: socket.id });
     console.log('user disconnected, ', socket.id);
   });
 });

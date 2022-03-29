@@ -1,8 +1,8 @@
 import express from 'express';
 import {
   createGameSeek,
-  beginGame,
-  updateGame,
+  createGame,
+  // updateGame,
   getGameSeeks,
 } from '../controllers/gameController';
 
@@ -14,8 +14,8 @@ router.get('/:gameId');
 
 router.post('/', createGameSeek);
 
-router.post('/:gameId', beginGame);
+router.post('/:gameSeekId', createGame);
 
-router.put('/:gameId', updateGame);
+// router.put('/:gameId', updateGame);
 
 export default router;

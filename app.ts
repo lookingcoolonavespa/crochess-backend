@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import 'dotenv/config';
 import gameRouter from './routes/gameRouter';
 import gameSeekRouter from './routes/gameSeekRouter';
-import { Server as SocketServer } from 'socket.io';
+import { Server as SocketServer, Socket } from 'socket.io';
 import GameSeek from './models/GameSeek';
 
 const app = express();
@@ -53,6 +53,9 @@ db.once('open', () => {
   gamesChangeStream.on('change', (change) => {
     switch (change.operationType) {
       case 'update': {
+        if (!change.documentKey) return;
+        const gameId = change.documentKey?.toString();
+        io.to(gameId).emit('update', change.fullDocument);
       }
     }
   });
@@ -63,16 +66,16 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
   // Website you wish to allow to connect
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
 
   // Request methods you wish to allow
-  res.header(
+  res.setHeader(
     'Access-Control-Allow-Methods',
     'GET, POST, OPTIONS, PUT, PATCH, DELETE'
   );
 
   // Request headers you wish to allow
-  res.header(
+  res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, X-Requested-With, Authorization'
   );

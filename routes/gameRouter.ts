@@ -11,8 +11,6 @@ const router = express.Router();
 
 // router.get('/:gameId');
 
-router.post('/', createGame);
-
 router.post('/', createGame, joinGameRoom);
 
 // router.put('/:gameId', updateGame);

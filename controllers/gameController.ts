@@ -6,27 +6,6 @@ import { GameInterface } from '../types/interfaces';
 import { Board, MiddleWare } from '../types/types';
 import { io } from '../app';
 
-export const getGameSeeks: MiddleWare = async (req, res) => {
-  const games = await GameSeek.find({});
-
-  return res.json(games);
-};
-
-export const createGameSeek: MiddleWare = async (req, res, next) => {
-  const seek = new GameSeek({
-    color: req.body.color || 'random',
-    time: req.body.time,
-    increment: req.body.increment,
-    seeker: req.body.seeker,
-    gameType: req.body.gameType,
-  });
-  seek.save((err: unknown) => {
-    if (err) return next(err);
-  });
-
-  return res.json(seek);
-};
-
 export const createGame: MiddleWare = (req, res, next) => {
   const game = new Game({
     white: {
@@ -46,7 +25,21 @@ export const createGame: MiddleWare = (req, res, next) => {
   });
 
   io.of('games').to(req.body.seeker).emit('startGame', game._id);
-  return res.send(game._id);
+
+  res.send(game._id);
+
+  req.body.gameId = game._id.toString();
+  return next();
+};
+
+export const joinGameRoom: MiddleWare = (req, res, next) => {
+  if (!req.body.gameId) return next();
+
+  const seekerSocket = io.of('games').sockets.get(req.body.seeker);
+  const challengerSocket = io.of('games').sockets.get(req.body.challenger);
+
+  seekerSocket?.join(req.body.gameId);
+  challengerSocket?.join(req.body.gameId);
 };
 
 // export const updateGame: MiddleWare = async (req, res) => {

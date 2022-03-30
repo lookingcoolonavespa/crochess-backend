@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import 'dotenv/config';
 import gameRouter from './routes/gameRouter';
+import gameSeekRouter from './routes/gameSeekRouter';
 import { Server as SocketServer } from 'socket.io';
 import GameSeek from './models/GameSeek';
 
@@ -32,7 +33,6 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
   const gameSeeksChangeStream = db.collection('gameseeks').watch();
-
   gameSeeksChangeStream.on('change', (change) => {
     switch (change.operationType) {
       case 'insert': {
@@ -43,7 +43,16 @@ db.once('open', () => {
       }
 
       case 'delete': {
+        console.log(change.documentKey);
         io.of('games').emit('deletedGame', change.documentKey);
+      }
+    }
+  });
+
+  const gamesChangeStream = db.collection('games').watch();
+  gamesChangeStream.on('change', (change) => {
+    switch (change.operationType) {
+      case 'update': {
       }
     }
   });
@@ -77,6 +86,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/games', gameRouter);
+app.use('/gameSeeks', gameSeekRouter);
 
 const portNo = 8000;
 server.listen(portNo, () => console.log(`listening on ${portNo}`));

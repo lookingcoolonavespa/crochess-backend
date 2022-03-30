@@ -1,20 +1,19 @@
 import express from 'express';
 import {
-  createGameSeek,
   createGame,
   // updateGame,
-  getGameSeeks,
+  joinGameRoom,
 } from '../controllers/gameController';
 
 const router = express.Router();
 
-router.get('/', getGameSeeks);
+// router.get('/', getGameSeeks);
 
-router.get('/:gameId');
+// router.get('/:gameId');
 
-router.post('/', createGameSeek);
+router.post('/', createGame);
 
-router.post('/:gameSeekId', createGame);
+router.post('/', createGame, joinGameRoom);
 
 // router.put('/:gameId', updateGame);
 

@@ -55,7 +55,7 @@ db.once('open', () => {
       case 'update': {
         if (!change.documentKey) return;
         const gameId = change.documentKey?.toString();
-        io.to(gameId).emit('update', change.fullDocument);
+        io.of(gameId).emit('update', change.fullDocument);
       }
     }
   });

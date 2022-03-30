@@ -2,7 +2,6 @@ import express from 'express';
 import {
   createGame,
   // updateGame,
-  joinGameRoom,
 } from '../controllers/gameController';
 
 const router = express.Router();
@@ -11,7 +10,7 @@ const router = express.Router();
 
 // router.get('/:gameId');
 
-router.post('/', createGame, joinGameRoom);
+router.post('/', createGame);
 
 // router.put('/:gameId', updateGame);
 

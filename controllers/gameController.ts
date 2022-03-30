@@ -34,16 +34,6 @@ export const createGame: MiddleWare = (req, res, next) => {
   return next();
 };
 
-export const joinGameRoom: MiddleWare = (req, res, next) => {
-  if (!req.body.gameId) return next();
-
-  const seekerSocket = io.of('games').sockets.get(req.body.seeker);
-  const challengerSocket = io.of('games').sockets.get(req.body.challenger);
-
-  seekerSocket?.join(req.body.gameId);
-  challengerSocket?.join(req.body.gameId);
-};
-
 // export const updateGame: MiddleWare = async (req, res) => {
 //   const color = req.body.color as 'white' | 'black';
 //   const otherColor = req.body.color === 'white' ? 'black' : 'white';

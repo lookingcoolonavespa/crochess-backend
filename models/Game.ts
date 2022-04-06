@@ -4,11 +4,11 @@ import { GameInterface } from '../types/interfaces';
 const GameSchema = new Schema<GameInterface>({
   white: {
     player: { type: String },
-    timeUsed: { type: Number },
+    timeLeft: { type: Date },
   },
   black: {
     player: { type: String },
-    timeUsed: { type: Number },
+    timeLeft: { type: Date },
   },
   // board: { type: Map },
   // scoreSheet: [{ type: String }],

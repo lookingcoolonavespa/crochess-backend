@@ -6,6 +6,8 @@ import gameRouter from './routes/gameRouter';
 import gameSeekRouter from './routes/gameSeekRouter';
 import { Server as SocketServer, Socket } from 'socket.io';
 import GameSeek from './models/GameSeek';
+import Game from './models/Game';
+import dayjs from 'dayjs';
 
 const app = express();
 const server = http.createServer(app);
@@ -16,14 +18,39 @@ export const io = new SocketServer(server, {
   },
 });
 
-io.of('games').on('connection', async (socket) => {
-  console.log('user connected, ', socket.id);
+(async function () {
   // const deletedCount = await GameSeek.deleteMany({});
   // console.log(deletedCount);
+  // const deletedCount = await Game.deleteMany({});
+  // console.log(deletedCount);
+  // const game = new Game({
+  //   white: {
+  //     player: 'ababab',
+  //     timeLeft: Date.now(),
+  //   },
+  //   black: {
+  //     player: 'ababab',
+  //     timeLeft: Date.now(),
+  //   },
+  //   time: 30,
+  //   increment: 10,
+  // });
+  // await game.save();
+})();
+
+io.of('games').on('connection', async (socket) => {
+  console.log('user connected, ', socket.id);
 
   socket.on('disconnect', async () => {
     await GameSeek.findOneAndDelete({ seeker: socket.id });
     console.log('user disconnected, ', socket.id);
+  });
+});
+io.of('624ddfd99ce65c46beddcb84').on('connection', async (socket) => {
+  const game = await Game.findById('624ddfd99ce65c46beddcb84');
+  await game?.update({
+    'white.time': dayjs().add(game.time, 'minutes'),
+    'black.time': dayjs().add(game.time, 'minutes'),
   });
 });
 
@@ -55,6 +82,7 @@ db.once('open', () => {
       case 'update': {
         if (!change.documentKey) return;
         const gameId = change.documentKey?.toString();
+
         io.of(gameId).emit('update', change.fullDocument);
       }
     }

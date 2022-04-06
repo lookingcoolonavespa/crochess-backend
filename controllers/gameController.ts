@@ -24,14 +24,17 @@ export const createGame: MiddleWare = (req, res, next) => {
     if (err) return next(err);
   });
 
-  console.log(game);
-
   io.of('games').to(req.body.seeker).emit('startGame', game._id);
 
   res.send(game._id.toString());
 
   req.body.gameId = game._id.toString();
   return next();
+};
+
+export const getGame: MiddleWare = async (req, res, next) => {
+  const game = await Game.findById(req.params.gameId);
+  return res.send(game);
 };
 
 // export const updateGame: MiddleWare = async (req, res) => {

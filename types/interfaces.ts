@@ -12,6 +12,7 @@ export interface GameInterface {
   // scoreSheet: string[];
   time: number;
   increment: number;
+  turn: 'white' | 'black';
 }
 
 export interface GameSeekInterface {

@@ -24,6 +24,7 @@
     "ts-node": "^10.7.0"
   },
   "devDependencies": {
+    "@types/source-map-support": "^0.5.4",
     "@typescript-eslint/eslint-plugin": "^5.16.0",
     "@typescript-eslint/parser": "^5.16.0",
     "eslint": "^7.32.0",
@@ -34,6 +35,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.2.0",
     "nodemon": "^2.0.15",
+    "source-map-support": "^0.5.21",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.6.2"
   },

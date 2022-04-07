@@ -18,6 +18,7 @@ export const createGame: MiddleWare = (req, res, next) => {
     },
     time: req.body.time,
     increment: req.body.increment,
+    turn: 'white',
   });
 
   game.save((err) => {
@@ -33,6 +34,11 @@ export const createGame: MiddleWare = (req, res, next) => {
 };
 
 export const getGame: MiddleWare = async (req, res, next) => {
+  console.log(
+    req.params,
+    req.protocol + '://' + req.get('host') + req.originalUrl
+  );
+  if (req.params.gameId === 'undefined') return next();
   const game = await Game.findById(req.params.gameId);
   return res.send(game);
 };

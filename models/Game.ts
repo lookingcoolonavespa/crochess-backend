@@ -14,6 +14,7 @@ const GameSchema = new Schema<GameInterface>({
   // scoreSheet: [{ type: String }],
   time: { type: Number },
   increment: { type: Number },
+  turn: { type: String },
 });
 
 const Game = model<GameInterface>('Game', GameSchema);

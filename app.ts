@@ -8,6 +8,9 @@ import { Server as SocketServer, Socket } from 'socket.io';
 import GameSeek from './models/GameSeek';
 import Game from './models/Game';
 import dayjs from 'dayjs';
+import { install } from 'source-map-support';
+
+install();
 
 const app = express();
 const server = http.createServer(app);
@@ -48,6 +51,7 @@ io.of('games').on('connection', async (socket) => {
 });
 io.of('624ddfd99ce65c46beddcb84').on('connection', async (socket) => {
   const game = await Game.findById('624ddfd99ce65c46beddcb84');
+
   await game?.update({
     'white.time': dayjs().add(game.time, 'minutes'),
     'black.time': dayjs().add(game.time, 'minutes'),

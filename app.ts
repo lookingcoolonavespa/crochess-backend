@@ -50,12 +50,7 @@ io.of('games').on('connection', async (socket) => {
   });
 });
 io.of('624ddfd99ce65c46beddcb84').on('connection', async (socket) => {
-  const game = await Game.findById('624ddfd99ce65c46beddcb84');
-
-  await game?.update({
-    'white.time': dayjs().add(game.time, 'minutes'),
-    'black.time': dayjs().add(game.time, 'minutes'),
-  });
+  console.log(socket.id);
 });
 
 // mongoose connection
@@ -85,9 +80,8 @@ db.once('open', () => {
     switch (change.operationType) {
       case 'update': {
         if (!change.documentKey) return;
-        const gameId = change.documentKey?.toString();
-
-        io.of(gameId).emit('update', change.fullDocument);
+        const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
+        io.of(gameId).emit('update', change.updateDescription?.updatedFields);
       }
     }
   });

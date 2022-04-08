@@ -2,7 +2,7 @@ import { Board, GameType } from './types';
 
 interface Player {
   player: string;
-  time: number;
+  timeLeft: number;
 }
 
 export interface GameInterface {
@@ -13,6 +13,7 @@ export interface GameInterface {
   time: number;
   increment: number;
   turn: 'white' | 'black';
+  turnStart: number;
 }
 
 export interface GameSeekInterface {

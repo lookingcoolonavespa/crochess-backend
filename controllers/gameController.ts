@@ -5,7 +5,7 @@ import { getTime } from 'date-fns';
 import { GameInterface } from '../types/interfaces';
 import { Board, MiddleWare } from '../types/types';
 import { io } from '../app';
-import { convertFromMinutesToMs } from '../utils/timeStuff';
+import { convertFromMinutesToMs, formatTime } from '../utils/timeStuff';
 
 export const createGame: MiddleWare = (req, res, next) => {
   const game = new Game({
@@ -53,15 +53,15 @@ export const updateGame: MiddleWare = async (req, res) => {
 
   const timeSpent = Date.now() - game.turnStart;
 
-  game[color].timeLeft =
-    game[color].timeLeft -
-    timeSpent +
-    game.increment * 1000 /* need to convert from ms to seconds */;
-
+  game[color].timeLeft = game[color].timeLeft - timeSpent;
+  console.log({
+    color,
+    timeSpent: formatTime(timeSpent),
+    timeLeft: formatTime(game[color].timeLeft),
+  });
   game.turnStart = Date.now();
   game.turn = otherColor;
 
   const updatedGame = await game.save();
-
   return res.json(updatedGame);
 };

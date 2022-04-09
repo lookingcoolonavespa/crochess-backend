@@ -69,19 +69,21 @@ db.once('open', () => {
       }
 
       case 'delete': {
-        console.log(change.documentKey);
         io.of('games').emit('deletedGame', change.documentKey);
       }
     }
   });
 
-  const gamesChangeStream = db.collection('games').watch();
+  const gamesChangeStream = db
+    .collection('games')
+    .watch([], { fullDocument: 'updateLookup' });
   gamesChangeStream.on('change', (change) => {
+    console.log(change);
     switch (change.operationType) {
       case 'update': {
         if (!change.documentKey) return;
         const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
-        io.of(gameId).emit('update', change.updateDescription?.updatedFields);
+        io.of(gameId).emit('update', change.fullDocument);
       }
     }
   });

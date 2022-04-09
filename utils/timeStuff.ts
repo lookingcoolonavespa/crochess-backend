@@ -26,9 +26,9 @@ export function formatTime(ms: number) {
   }
 }
 
-export function addTime(ms: number, timeToAdd: number, unit: string) {
+export function addTime(base: number, timeToAdd: number, unit: string) {
   return dayjs
-    .duration(ms)
+    .duration(base)
     .add({
       [unit]: timeToAdd,
     })

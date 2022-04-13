@@ -10,8 +10,10 @@ import {
   formatTime,
   addTime,
 } from '../utils/timeStuff';
+import initGameboard from '../utils/initGameboard';
 
 export const createGame: MiddleWare = (req, res, next) => {
+  const board = initGameboard();
   const game = new Game({
     white: {
       player: req.body.white,

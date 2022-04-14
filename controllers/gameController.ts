@@ -11,21 +11,28 @@ import {
   addTime,
 } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
+import { startingPositions } from 'crochess-api';
+import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 
 export const createGame: MiddleWare = (req, res, next) => {
-  const board = initGameboard();
+  const gameboard = initGameboard(startingPositions.standard);
+
+  const seekerColor = getWhiteOrBlack();
+
   const game = new Game({
     white: {
-      player: req.body.white,
+      player: seekerColor === 'white' ? req.body.seeker : req.body.challenger,
       timeLeft: convertFromMinutesToMs(req.body.time),
     },
     black: {
-      player: req.body.black,
+      player: seekerColor === 'black' ? req.body.seeker : req.body.challenger,
       timeLeft: convertFromMinutesToMs(req.body.time),
     },
+    board: gameboard.board,
     time: req.body.time,
     increment: req.body.increment,
     turn: 'white',
+    turnStart: Date.now(),
   });
 
   game.save((err) => {
@@ -60,7 +67,8 @@ export const updateGame: MiddleWare = async (req, res) => {
   const timeSpent = Date.now() - game.turnStart;
   const base = game[color].timeLeft - timeSpent;
 
-  game[color].timeLeft = addTime(base, game.increment, 'seconds');
+  game[color].timeLeft =
+    base > 0 ? addTime(base, game.increment, 'seconds') : 0;
   console.log({
     color,
     timeSpent: formatTime(timeSpent),

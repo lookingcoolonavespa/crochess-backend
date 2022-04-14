@@ -1,4 +1,5 @@
-import { Board, GameType } from './types';
+import { GameType } from './types';
+import { Board } from 'crochess-api/dist/types/types';
 
 interface Player {
   player: string;
@@ -8,7 +9,7 @@ interface Player {
 export interface GameInterface {
   white: Player;
   black: Player;
-  // board: Board;
+  board: Board;
   // scoreSheet: string[];
   time: number;
   increment: number;

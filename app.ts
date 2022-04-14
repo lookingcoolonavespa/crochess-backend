@@ -42,15 +42,14 @@ export const io = new SocketServer(server, {
 })();
 
 io.of('games').on('connection', async (socket) => {
-  console.log('user connected, ', socket.id);
-
   socket.on('disconnect', async () => {
     await GameSeek.findOneAndDelete({ seeker: socket.id });
     console.log('user disconnected, ', socket.id);
   });
-});
-io.of('624ddfd99ce65c46beddcb84').on('connection', async (socket) => {
-  console.log(socket.id);
+
+  socket.on('joinRoom', (room: string) => {
+    socket.join(room);
+  });
 });
 
 // mongoose connection
@@ -63,7 +62,6 @@ db.once('open', () => {
     switch (change.operationType) {
       case 'insert': {
         const game = change.fullDocument;
-        console.log(game);
         io.of('games').emit('newGame', game);
         break;
       }
@@ -78,12 +76,11 @@ db.once('open', () => {
     .collection('games')
     .watch([], { fullDocument: 'updateLookup' });
   gamesChangeStream.on('change', (change) => {
-    console.log(change);
     switch (change.operationType) {
       case 'update': {
         if (!change.documentKey) return;
         const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
-        io.of(gameId).emit('update', change.fullDocument);
+        io.of('games').to(gameId).emit('update', change.fullDocument);
       }
     }
   });

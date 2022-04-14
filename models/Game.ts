@@ -10,7 +10,7 @@ const GameSchema = new Schema<GameInterface>({
     player: { type: String },
     timeLeft: { type: Number },
   },
-  // board: { type: Map },
+  board: { type: Map },
   // scoreSheet: [{ type: String }],
   time: { type: Number },
   increment: { type: Number },

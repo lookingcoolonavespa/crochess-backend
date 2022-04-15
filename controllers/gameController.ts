@@ -77,6 +77,8 @@ export const updateGame: MiddleWare = async (req, res) => {
   game.turnStart = Date.now();
   game.turn = otherColor;
 
+  game.board = req.body.board;
+
   const updatedGame = await game.save();
   return res.json(updatedGame);
 };

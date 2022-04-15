@@ -1,7 +1,7 @@
 import { Gameboard } from 'crochess-api';
-import { AllPieceMap } from 'crochess-api/dist/types/interfaces';
+import { AllPieceMap, GameboardObj } from 'crochess-api/dist/types/interfaces';
 
-export default function initGameboard(pieceMap: AllPieceMap) {
+export default function initGameboard(pieceMap: AllPieceMap): GameboardObj {
   const gameboard = Gameboard();
 
   let color: keyof typeof pieceMap;

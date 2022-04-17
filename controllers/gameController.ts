@@ -63,48 +63,29 @@ export const updateGame: MiddleWare = async (req, res) => {
   }
 
   // validate move
-  const { from, to } = req.body;
+  const { from, to, promote } = req.body;
 
   const gameboard: GameboardObj = Gameboard(
     game?.board,
     game.checks,
     game.castle
   );
-  const legalMoves = gameboard.at(from).getLegalMoves();
-  if (!legalMoves.includes(to)) return res.send('not a valid move');
+  const newBoardState = gameboard.makeMove(from, to, promote);
+  if (!newBoardState) return res.send('not valid move');
+  const castleRights = gameboard.castling.getRightsAfterMove(to);
+  const squaresGivingCheck = gameboard.get.squaresGivingCheckAfterMove(
+    from,
+    to
+  );
+
+  game.board = newBoardState;
+  game.castle = castleRights;
+  game.checks = squaresGivingCheck;
 
   // check if i need to toggle castling
-  const piece = gameboard.at(from).piece as PieceObj;
-  if (game.castle[piece.color].kingside || game.castle[piece.color].queenside) {
-    // check if i need to change castling rights
-    if (piece.type === 'king') {
-      game.castle[piece.color].kingside = false;
-      game.castle[piece.color].queenside = false;
-    }
 
-    if (piece.type === 'rook') {
-      // need to find if it is kingside or queenside rook
-      const [file] = from.split('');
-      const kingside = files.indexOf(file) > 3;
-      if (kingside) game.castle[piece.color].kingside = false;
-      else game.castle[piece.color].queenside = false;
-    }
-  }
-
-  // check if move is castle
   const color = game.turn;
-  let castleSide: '' | 'queenside' | 'kingside' = '';
 
-  if (piece.type === 'king') {
-    const castleSquares = gameboard.get.castleSquares(game.turn);
-
-    for (const [side, squares] of Object.entries(castleSquares)) {
-      if (squares[1] === to) castleSide = side as 'kingside' | 'queenside';
-    }
-  }
-
-  if (castleSide) gameboard.castle(color, castleSide);
-  else gameboard.from(from).to(to);
   // deal with turn/timer
   const otherColor = color === 'white' ? 'black' : 'white';
 
@@ -113,11 +94,6 @@ export const updateGame: MiddleWare = async (req, res) => {
 
   game[color].timeLeft =
     base > 0 ? addTime(base, game.increment, 'seconds') : 0;
-  console.log({
-    color,
-    timeSpent: formatTime(timeSpent),
-    timeLeft: formatTime(game[color].timeLeft),
-  });
   game.turnStart = Date.now();
   game.turn = otherColor;
 

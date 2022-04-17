@@ -58,20 +58,22 @@ export const updateGame: MiddleWare = async (req, res) => {
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
     req.body.gameId
   );
-  if (!game) {
-    return res.status(400).send('game not found');
-  }
+  if (!game) return res.status(400).send('game not found');
 
   // validate move
   const { from, to, promote } = req.body;
 
   const gameboard: GameboardObj = Gameboard(
-    game?.board,
+    game.board,
     game.checks,
     game.castle
   );
+  const piece = gameboard.at(from).piece;
+  if (!piece) return res.status(409).send('not valid move');
+  if (piece.color !== game.turn) return res.status(409).send('not valid move');
+
   const newBoardState = gameboard.makeMove(from, to, promote);
-  if (!newBoardState) return res.send('not valid move');
+  if (!newBoardState) return res.status(409).send('not valid move');
   const castleRights = gameboard.castling.getRightsAfterMove(to);
   const squaresGivingCheck = gameboard.get.squaresGivingCheckAfterMove(
     from,

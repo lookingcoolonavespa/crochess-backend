@@ -40,9 +40,12 @@ export const createGame: MiddleWare = (req, res, next) => {
     if (err) return next(err);
   });
 
-  io.of('games').to(req.body.seeker).emit('startGame', game._id);
+  io.of('games').to(req.body.seeker).emit('startGame', {
+    cookieId: req.body.seeker,
+    gameId: game._id,
+  });
 
-  res.send(game._id.toString());
+  res.send({ cookieId: req.body.challenger, gameId: game._id.toString() });
 
   req.body.gameId = game._id.toString();
   return next();
@@ -55,6 +58,7 @@ export const getGame: MiddleWare = async (req, res, next) => {
 };
 
 export const updateGame: MiddleWare = async (req, res) => {
+  console.log(req.cookies.id);
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
     req.body.gameId
   );

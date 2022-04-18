@@ -9,6 +9,8 @@ import GameSeek from './models/GameSeek';
 import Game from './models/Game';
 import dayjs from 'dayjs';
 import { install } from 'source-map-support';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 install();
 
@@ -88,7 +90,14 @@ db.once('open', () => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use((req, res, next) => {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
@@ -100,10 +109,9 @@ app.use((req, res, next) => {
   );
 
   // Request headers you wish to allow
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, X-Requested-With, Authorization'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'true, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'true');
+  // res.setHeader('Content-Type', 'X-Requested-With, Authorization');
 
   // Set to true if you need the website to include cookies in the requests sent
   // to the API (e.g. in case you use sessions)

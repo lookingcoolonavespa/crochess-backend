@@ -58,11 +58,12 @@ export const getGame: MiddleWare = async (req, res, next) => {
 };
 
 export const updateGame: MiddleWare = async (req, res) => {
-  console.log(req.cookies.id);
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
     req.body.gameId
   );
   if (!game) return res.status(400).send('game not found');
+  if (req.cookies.id !== game[game.turn].player)
+    return res.status(409).send('not your turn');
 
   // validate move
   const { from, to, promote } = req.body;

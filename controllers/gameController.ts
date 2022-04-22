@@ -115,7 +115,7 @@ export const updateGame: MiddleWare = async (req, res) => {
     game.board
   );
   const newHistory = History(game.history).insertMove(moveNotation);
-  console.log(newHistory);
+  console.log(game.history, newHistory);
   game.board = newBoardState;
   game.castle = castleRights;
   game.checks = squaresGivingCheck;

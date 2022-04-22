@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
 import { GameInterface } from '../types/interfaces';
 
 const GameSchema = new Schema<GameInterface>({
@@ -11,7 +11,7 @@ const GameSchema = new Schema<GameInterface>({
     timeLeft: { type: Number },
   },
   board: { type: Map },
-  // scoreSheet: [{ type: String }],
+  history: [[{ type: String }]],
   time: { type: Number },
   increment: { type: Number },
   turn: { type: String },

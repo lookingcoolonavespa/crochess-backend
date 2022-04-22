@@ -11,7 +11,7 @@ import {
   addTime,
 } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
-import { startingPositions, Gameboard, files } from 'crochess-api';
+import { startingPositions, Gameboard, History } from 'crochess-api';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { GameboardObj, PieceObj } from 'crochess-api/dist/types/interfaces';
 
@@ -43,9 +43,14 @@ export const createGame: MiddleWare = (req, res, next) => {
   io.of('games').to(req.body.seeker).emit('startGame', {
     cookieId: req.body.seeker,
     gameId: game._id,
+    color: seekerColor,
   });
 
-  res.send({ cookieId: req.body.challenger, gameId: game._id.toString() });
+  res.send({
+    cookieId: req.body.challenger,
+    gameId: game._id.toString(),
+    color: seekerColor === 'white' ? 'black' : 'white',
+  });
 
   req.body.gameId = game._id.toString();
   return next();
@@ -62,7 +67,12 @@ export const updateGame: MiddleWare = async (req, res) => {
     req.body.gameId
   );
   if (!game) return res.status(400).send('game not found');
-  if (req.cookies.id !== game[game.turn].player)
+
+  if (
+    // checking id of cookie against playerId
+    // the id of player looks like 'gameId(color)'
+    req.cookies[`${req.body.gameId}(${game.turn})`] !== game[game.turn].player
+  )
     return res.status(409).send('not your turn');
 
   // validate move
@@ -79,23 +89,42 @@ export const updateGame: MiddleWare = async (req, res) => {
 
   const newBoardState = gameboard.makeMove(from, to, promote);
   if (!newBoardState) return res.status(409).send('not valid move');
-  const castleRights = gameboard.castling.getRightsAfterMove(to);
+  const castleRights = gameboard.get.castleRightsAfterMove(to);
+
   const squaresGivingCheck = gameboard.get.squaresGivingCheckAfterMove(
     from,
     to
   );
+  const color = game.turn;
+  const otherColor = color === 'white' ? 'black' : 'white';
+  const checkmate =
+    squaresGivingCheck.length > 0 &&
+    gameboard.get.isCheckmate(otherColor, squaresGivingCheck);
 
+  if (checkmate) {
+    // game over stuff
+  }
+
+  // history stuff
+  const moveNotation = gameboard.get.moveNotation(
+    from,
+    to,
+    promote,
+    squaresGivingCheck.length > 0,
+    checkmate,
+    game.board
+  );
+  const newHistory = History(game.history).insertMove(moveNotation);
+  console.log(newHistory);
   game.board = newBoardState;
   game.castle = castleRights;
   game.checks = squaresGivingCheck;
+  game.history = newHistory;
 
-  // check if i need to toggle castling
-
-  const color = game.turn;
+  // add notation to history
+  // const history = History(game.history).insertMove();
 
   // deal with turn/timer
-  const otherColor = color === 'white' ? 'black' : 'white';
-
   const timeSpent = Date.now() - game.turnStart;
   const base = game[color].timeLeft - timeSpent;
 

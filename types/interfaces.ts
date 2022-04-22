@@ -1,5 +1,5 @@
 import { GameType } from './types';
-import { Board, Square } from 'crochess-api/dist/types/types';
+import { Board, HistoryType, Square } from 'crochess-api/dist/types/types';
 import { CastleObj } from 'crochess-api/dist/types/interfaces';
 
 interface Player {
@@ -13,7 +13,7 @@ export interface GameInterface {
   board: Board;
   checks: Square[];
   castle: CastleObj;
-  // scoreSheet: string[];
+  history: HistoryType;
   time: number;
   increment: number;
   turn: 'white' | 'black';

@@ -77,7 +77,7 @@ export const updateGame: MiddleWare = async (req, res) => {
 
   // validate move
   const { from, to, promote } = req.body;
-
+  console.log(game.checks);
   const gameboard: GameboardObj = Gameboard(
     game.board,
     game.checks,
@@ -100,7 +100,6 @@ export const updateGame: MiddleWare = async (req, res) => {
   const checkmate =
     squaresGivingCheck.length > 0 &&
     gameboard.get.isCheckmate(otherColor, squaresGivingCheck);
-
   if (checkmate) {
     // game over stuff
   }
@@ -115,14 +114,11 @@ export const updateGame: MiddleWare = async (req, res) => {
     game.board
   );
   const newHistory = History(game.history).insertMove(moveNotation);
-  console.log(game.history, newHistory);
+
   game.board = newBoardState;
   game.castle = castleRights;
   game.checks = squaresGivingCheck;
   game.history = newHistory;
-
-  // add notation to history
-  // const history = History(game.history).insertMove();
 
   // deal with turn/timer
   const timeSpent = Date.now() - game.turnStart;

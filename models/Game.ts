@@ -11,6 +11,7 @@ const GameSchema = new Schema<GameInterface>({
     timeLeft: { type: Number },
   },
   board: { type: Map },
+  checks: [{ type: String }],
   history: [[{ type: String }]],
   time: { type: Number },
   increment: { type: Number },

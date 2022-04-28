@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { GameInterface } from '../types/interfaces';
 
 const GameSchema = new Schema<GameInterface>({
@@ -17,6 +17,9 @@ const GameSchema = new Schema<GameInterface>({
   increment: { type: Number },
   turn: { type: String },
   turnStart: { type: Number },
+  active: { type: Boolean },
+  winner: { type: String },
+  causeOfDeath: { type: String },
 });
 
 const Game = model<GameInterface>('Game', GameSchema);

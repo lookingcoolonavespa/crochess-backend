@@ -18,6 +18,9 @@ export interface GameInterface {
   increment: number;
   turn: 'white' | 'black';
   turnStart: number;
+  active: boolean;
+  winner: 'white' | 'black' | null;
+  causeOfDeath: string;
 }
 
 export interface GameSeekInterface {

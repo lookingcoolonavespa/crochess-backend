@@ -1,19 +1,13 @@
 import { HydratedDocument } from 'mongoose';
 import Game from '../models/Game';
-import GameSeek from '../models/GameSeek';
-import { getTime } from 'date-fns';
 import { GameInterface } from '../types/interfaces';
-import { Board, MiddleWare } from '../types/types';
+import { MiddleWare } from '../types/types';
 import { io } from '../app';
-import {
-  convertFromMinutesToMs,
-  formatTime,
-  addTime,
-} from '../utils/timeStuff';
+import { convertFromMinutesToMs, addTime } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
 import { startingPositions, Gameboard, History } from 'crochess-api';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
-import { GameboardObj, PieceObj } from 'crochess-api/dist/types/interfaces';
+import { GameboardObj } from 'crochess-api/dist/types/interfaces';
 
 export const createGame: MiddleWare = (req, res, next) => {
   const gameboard = initGameboard(startingPositions.standard);
@@ -34,6 +28,7 @@ export const createGame: MiddleWare = (req, res, next) => {
     increment: req.body.increment,
     turn: 'white',
     turnStart: Date.now(),
+    active: true,
   });
 
   game.save((err) => {
@@ -77,7 +72,6 @@ export const updateGame: MiddleWare = async (req, res) => {
 
   // validate move
   const { from, to, promote } = req.body;
-  console.log(game.checks);
   const gameboard: GameboardObj = Gameboard(
     game.board,
     game.checks,
@@ -102,6 +96,9 @@ export const updateGame: MiddleWare = async (req, res) => {
     gameboard.get.isCheckmate(otherColor, squaresGivingCheck);
   if (checkmate) {
     // game over stuff
+    game.active = false;
+    game.winner = game.turn;
+    game.causeOfDeath = 'checkmate';
   }
 
   // history stuff

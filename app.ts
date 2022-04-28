@@ -10,6 +10,7 @@ import Game from './models/Game';
 import { install } from 'source-map-support';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import endGameByTime from './utils/endGameByTime';
 
 install();
 
@@ -73,6 +74,7 @@ db.once('open', () => {
     }
   });
 
+  const timers: { [key: string]: ReturnType<typeof setTimeout> } = {};
   const gamesChangeStream = db
     .collection('games')
     .watch([], { fullDocument: 'updateLookup' });
@@ -80,8 +82,18 @@ db.once('open', () => {
     switch (change.operationType) {
       case 'update': {
         if (!change.documentKey) return;
+        if (!change.fullDocument) return;
+
         const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
         io.of('games').to(gameId).emit('update', change.fullDocument);
+
+        // begin turn timer
+        const { turn } = change.fullDocument;
+        if (timers[gameId]) clearTimeout(timers[gameId]);
+        timers[gameId] = setTimeout(() => {
+          const winner = turn === 'white' ? 'black' : 'white';
+          endGameByTime(gameId, winner);
+        }, change.fullDocument[turn].timeLeft as number);
       }
     }
   });

@@ -10,6 +10,7 @@ export default async function endGameByTime(
   game.active = false;
   game.winner = winner;
   game.causeOfDeath = 'time';
+  game.turnStart = undefined;
 
   await game.save();
 }

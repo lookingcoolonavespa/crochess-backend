@@ -6,7 +6,6 @@ import gameRouter from './routes/gameRouter';
 import gameSeekRouter from './routes/gameSeekRouter';
 import { Server as SocketServer } from 'socket.io';
 import GameSeek from './models/GameSeek';
-import Game from './models/Game';
 import { install } from 'source-map-support';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -88,12 +87,20 @@ db.once('open', () => {
         io.of('games').to(gameId).emit('update', change.fullDocument);
 
         // begin turn timer
-        const { turn } = change.fullDocument;
+        const { turn, active } = change.fullDocument;
         if (timers[gameId]) clearTimeout(timers[gameId]);
-        timers[gameId] = setTimeout(() => {
-          const winner = turn === 'white' ? 'black' : 'white';
-          endGameByTime(gameId, winner);
-        }, change.fullDocument[turn].timeLeft as number);
+        if (!active) {
+          delete timers[gameId];
+        } else {
+          timers[gameId] = setTimeout(() => {
+            const winner = turn === 'white' ? 'black' : 'white';
+            try {
+              endGameByTime(gameId, winner);
+            } catch (err) {
+              console.log(err);
+            }
+          }, change.fullDocument[turn].timeLeft as number);
+        }
       }
     }
   });

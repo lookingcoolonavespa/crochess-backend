@@ -1,6 +1,7 @@
 import { GameType } from './types';
 import { Board, HistoryType, Square } from 'crochess-api/dist/types/types';
-import { CastleObj } from 'crochess-api/dist/types/interfaces';
+import { AllPieceMap, CastleObj } from 'crochess-api/dist/types/interfaces';
+import { ObjectId, Types } from 'mongoose';
 
 interface Player {
   player: string;
@@ -17,10 +18,11 @@ export interface GameInterface {
   time: number;
   increment: number;
   turn: 'white' | 'black';
-  turnStart: number;
+  turnStart?: number;
   active: boolean;
   winner: 'white' | 'black' | null;
   causeOfDeath: string;
+  pieceMaps: ObjectId;
 }
 
 export interface GameSeekInterface {
@@ -29,4 +31,9 @@ export interface GameSeekInterface {
   increment: number;
   seeker: string;
   gameType: GameType;
+}
+
+export interface PieceMapsInterface {
+  game: Types.ObjectId;
+  list: AllPieceMap[];
 }

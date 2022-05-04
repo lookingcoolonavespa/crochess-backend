@@ -20,7 +20,6 @@ const GameSchema = new Schema<GameInterface>({
   active: { type: Boolean },
   winner: { type: String },
   causeOfDeath: { type: String },
-  pieceMaps: { type: Schema.Types.ObjectId, ref: 'PieceMaps' },
 });
 
 const Game = model<GameInterface>('Game', GameSchema);

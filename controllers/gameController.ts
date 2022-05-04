@@ -1,21 +1,19 @@
 import { HydratedDocument } from 'mongoose';
 import Game from '../models/Game';
-import { GameInterface, PieceMapsInterface } from '../types/interfaces';
+import { GameInterface } from '../types/interfaces';
 import { MiddleWare } from '../types/types';
 import { io } from '../app';
 import { convertFromMinutesToMs, addTime } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
 import { startingPositions, Gameboard, History } from 'crochess-api';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
-import { AllPieceMap, GameboardObj } from 'crochess-api/dist/types/interfaces';
-import PieceMaps from '../models/PieceMaps';
+import { GameboardObj } from 'crochess-api/dist/types/interfaces';
 
 export const createGame: MiddleWare = (req, res, next) => {
   const gameboard = initGameboard(startingPositions.standard);
 
   const seekerColor = getWhiteOrBlack();
 
-  const pieceMaps = new PieceMaps();
   const game = new Game({
     white: {
       player: seekerColor === 'white' ? req.body.seeker : req.body.challenger,
@@ -31,14 +29,6 @@ export const createGame: MiddleWare = (req, res, next) => {
     turn: 'white',
     turnStart: Date.now(),
     active: true,
-    pieceMaps: pieceMaps._id,
-  });
-  pieceMaps.game = game._id;
-  game.save((err) => {
-    if (err) return next(err);
-  });
-  pieceMaps.save((err) => {
-    if (err) return next(err);
   });
 
   io.of('games').to(req.body.seeker).emit('startGame', {
@@ -64,6 +54,8 @@ export const getGame: MiddleWare = async (req, res, next) => {
 };
 
 export const updateGame: MiddleWare = async (req, res) => {
+  const start = Date.now();
+
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
     req.body.gameId
   );
@@ -87,9 +79,11 @@ export const updateGame: MiddleWare = async (req, res) => {
   if (!piece) return res.status(409).send('not valid move');
   if (piece.color !== game.turn) return res.status(409).send('not valid move');
 
+  const validationElapsed = Date.now() - start;
+  const makeMoveStart = Date.now();
   // make move and make checks
-  const newBoardState = gameboard.makeMove(from, to, promote);
-  if (!newBoardState) return res.status(409).send('not valid move');
+  const newBoard = gameboard.makeMove(from, to, promote);
+  if (!newBoard) return res.status(409).send('not valid move');
   const castleRights = gameboard.get.castleRightsAfterMove(to);
   const squaresGivingCheck = gameboard.get.squaresGivingCheckAfterMove(
     from,
@@ -107,45 +101,7 @@ export const updateGame: MiddleWare = async (req, res) => {
     game.causeOfDeath = 'checkmate';
   }
 
-  // check for draw
-  const pieceMap = gameboard.get.pieceMap();
-  const allPieceMaps = await PieceMaps.findById(game.pieceMaps);
-  const matchingPieceMaps: { list: AllPieceMap[] }[] =
-    await PieceMaps.aggregate([
-      { $match: { _id: game.pieceMaps } },
-      {
-        $project: {
-          list: {
-            $filter: {
-              input: '$list',
-              as: 'pieceMap',
-              cond: {
-                $and: [
-                  { $eq: ['$$pieceMap.white.rook', pieceMap.white.rook] },
-                  { $eq: ['$$pieceMap.white.knight', pieceMap.white.knight] },
-                  { $eq: ['$$pieceMap.white.bishop', pieceMap.white.bishop] },
-                  { $eq: ['$$pieceMap.white.king', pieceMap.white.king] },
-                  { $eq: ['$$pieceMap.white.queen', pieceMap.white.queen] },
-                  { $eq: ['$$pieceMap.white.pawn', pieceMap.white.pawn] },
-                  { $eq: ['$$pieceMap.black.pawn', pieceMap.black.pawn] },
-                  { $eq: ['$$pieceMap.black.rook', pieceMap.black.rook] },
-                  { $eq: ['$$pieceMap.black.knight', pieceMap.black.knight] },
-                  { $eq: ['$$pieceMap.black.bishop', pieceMap.black.bishop] },
-                  { $eq: ['$$pieceMap.black.king', pieceMap.black.king] },
-                  { $eq: ['$$pieceMap.black.queen', pieceMap.black.queen] },
-                ],
-              },
-            },
-          },
-        },
-      },
-    ]);
-  if (matchingPieceMaps[0].list.length === 3) {
-    // draw is possible
-  }
-
-  if (!allPieceMaps) return res.status(400).send('something went wrong');
-  allPieceMaps.list = [...allPieceMaps.list, pieceMap];
+  const makeMoveElapsed = Date.now() - makeMoveStart;
 
   // history stuff
   const moveNotation = gameboard.get.moveNotation(
@@ -158,10 +114,57 @@ export const updateGame: MiddleWare = async (req, res) => {
   );
   const newHistory = History(game.history).insertMove(moveNotation);
 
-  game.board = newBoardState;
+  game.board = newBoard;
   game.castle = castleRights;
   game.checks = squaresGivingCheck;
   game.history = newHistory;
+
+  const checkDrawStart = Date.now();
+  // check for draw
+  const pieceMap = gameboard.get.pieceMap();
+  const boardState = {
+    pieceMap,
+    castleRights,
+    enPassant: gameboard.board.get(gameboard.enPassant.getSquare(to, color))
+      ?.enPassant,
+  };
+  const allBoardStates = gameboard.get.boardStatesFromHistory(game.history);
+  const repetition = gameboard.isDraw.byRepetition(allBoardStates, boardState);
+  const stalemate = gameboard.isDraw.byStalemate(color);
+  const insufficientMaterial =
+    gameboard.isDraw.byInsufficientMaterial(pieceMap);
+  const moveRule = gameboard.isDraw.byMoveRule(newHistory);
+
+  if (repetition.threefold || moveRule.fifty) {
+    // claim draw available
+    game.claimDraw = {
+      white: true,
+      black: true,
+    };
+  }
+  if (repetition.fivefold || stalemate || insufficientMaterial) {
+    // draw imminent
+    game.active = false;
+    game.winner = null;
+
+    let causeOfDeath = '';
+
+    switch (true) {
+      case repetition.fivefold:
+        causeOfDeath = 'fivefold repetition';
+        break;
+      case stalemate:
+        causeOfDeath = 'stalemate';
+        break;
+      case insufficientMaterial:
+        causeOfDeath = 'insufficient material';
+        break;
+    }
+
+    game.causeOfDeath = causeOfDeath;
+  }
+
+  const checkDrawElapsed = Date.now() - checkDrawStart;
 
   // deal with turn/timer
   const timeSpent = Date.now() - (game.turnStart as number);
@@ -173,7 +176,12 @@ export const updateGame: MiddleWare = async (req, res) => {
   if (!checkmate) game.turnStart = Date.now();
   game.turn = otherColor;
 
-  const updatedGame = await game.save();
-  await allPieceMaps.save();
-  return res.json(updatedGame);
+  await game.save();
+
+  return res.json({
+    validationElapsed,
+    makeMoveElapsed,
+    checkDrawElapsed,
+    total: Date.now() - start,
+  });
 };

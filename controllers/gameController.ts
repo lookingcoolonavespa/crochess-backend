@@ -9,7 +9,7 @@ import { startingPositions, Gameboard, History } from 'crochess-api';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { GameboardObj } from 'crochess-api/dist/types/interfaces';
 
-export const createGame: MiddleWare = (req, res, next) => {
+export const createGame: MiddleWare = async (req, res) => {
   const gameboard = initGameboard(startingPositions.standard);
 
   const seekerColor = getWhiteOrBlack();
@@ -17,11 +17,11 @@ export const createGame: MiddleWare = (req, res, next) => {
   const game = new Game({
     white: {
       player: seekerColor === 'white' ? req.body.seeker : req.body.challenger,
-      timeLeft: convertFromMinutesToMs(req.body.time),
+      timeLeft: req.body.time,
     },
     black: {
       player: seekerColor === 'black' ? req.body.seeker : req.body.challenger,
-      timeLeft: convertFromMinutesToMs(req.body.time),
+      timeLeft: req.body.time,
     },
     board: gameboard.board,
     time: req.body.time,
@@ -37,14 +37,13 @@ export const createGame: MiddleWare = (req, res, next) => {
     color: seekerColor,
   });
 
-  res.send({
+  await game.save();
+
+  return res.send({
     cookieId: req.body.challenger,
     gameId: game._id.toString(),
     color: seekerColor === 'white' ? 'black' : 'white',
   });
-
-  req.body.gameId = game._id.toString();
-  return next();
 };
 
 export const getGame: MiddleWare = async (req, res, next) => {

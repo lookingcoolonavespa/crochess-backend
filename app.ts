@@ -9,7 +9,8 @@ import GameSeek from './models/GameSeek';
 import { install } from 'source-map-support';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import endGameByTime from './utils/endGameByTime';
+import Game from './models/Game';
+import handleTurnTimer from './utils/handleTurnTimer';
 
 install();
 
@@ -23,10 +24,10 @@ export const io = new SocketServer(server, {
 });
 
 (async function () {
-  // const deletedCount = await GameSeek.deleteMany({});
-  // console.log(deletedCount);
-  // const deletedCount = await Game.deleteMany({});
-  // console.log(deletedCount);
+  // const gsDeletedCount = await GameSeek.deleteMany({});
+  // console.log(gsDeletedCount);
+  // const gDeletedCount = await Game.deleteMany({});
+  // console.log(gDeletedCount);
   // const game = new Game({
   //   white: {
   //     player: 'ababab',
@@ -73,34 +74,38 @@ db.once('open', () => {
     }
   });
 
-  const timers: { [key: string]: ReturnType<typeof setTimeout> } = {};
   const gamesChangeStream = db
     .collection('games')
     .watch([], { fullDocument: 'updateLookup' });
   gamesChangeStream.on('change', (change) => {
-    switch (change.operationType) {
-      case 'update': {
-        if (!change.documentKey) return;
-        if (!change.fullDocument) return;
+    if (!change.documentKey) return;
+    if (!change.fullDocument) return;
 
-        const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
+    const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
+
+    switch (change.operationType) {
+      case 'insert': {
+        const { turn, active } = change.fullDocument;
+        handleTurnTimer(
+          gameId,
+          active,
+          turn,
+          change.fullDocument[turn].timeLeft
+        );
+        break;
+      }
+      case 'update': {
         io.of('games').to(gameId).emit('update', change.fullDocument);
 
         // begin turn timer
         const { turn, active } = change.fullDocument;
-        if (timers[gameId]) clearTimeout(timers[gameId]);
-        if (!active) {
-          delete timers[gameId];
-        } else {
-          timers[gameId] = setTimeout(() => {
-            const winner = turn === 'white' ? 'black' : 'white';
-            try {
-              endGameByTime(gameId, winner);
-            } catch (err) {
-              console.log(err);
-            }
-          }, change.fullDocument[turn].timeLeft as number);
-        }
+        handleTurnTimer(
+          gameId,
+          active,
+          turn,
+          change.fullDocument[turn].timeLeft
+        );
+        break;
       }
     }
   });

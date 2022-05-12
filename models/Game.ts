@@ -19,6 +19,10 @@ const GameSchema = new Schema<GameInterface>({
   turnStart: { type: Number },
   active: { type: Boolean },
   winner: { type: String },
+  claimDraw: {
+    white: { type: Boolean },
+    black: { type: Boolean },
+  },
   causeOfDeath: { type: String },
 });
 

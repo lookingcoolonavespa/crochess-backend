@@ -28,6 +28,10 @@ export const createGame: MiddleWare = async (req, res) => {
     increment: req.body.increment,
     turn: 'white',
     turnStart: Date.now(),
+    claimDraw: {
+      white: false,
+      black: false,
+    },
     active: true,
   });
 
@@ -60,6 +64,10 @@ export const makeMove: MiddleWare = async (req, res) => {
   );
   if (!game) return res.status(400).send('game not found');
   if (!game.active) res.status(409).send('game is over');
+  console.log(
+    req.cookies[`${req.body.gameId}(${game.turn})`],
+    game[game.turn].player
+  );
   if (
     // checking id of cookie against playerId
     // the key holding id of player looks like 'gameId(color)'
@@ -134,13 +142,6 @@ export const makeMove: MiddleWare = async (req, res) => {
     gameboard.isDraw.byInsufficientMaterial(pieceMap);
   const moveRule = gameboard.isDraw.byMoveRule(newHistory);
 
-  if (repetition.threefold || moveRule.fifty) {
-    // claim draw available
-    game.claimDraw = {
-      white: true,
-      black: true,
-    };
-  }
   if (repetition.fivefold || stalemate || insufficientMaterial) {
     // draw imminent
     game.active = false;
@@ -161,6 +162,12 @@ export const makeMove: MiddleWare = async (req, res) => {
     }
 
     game.causeOfDeath = causeOfDeath;
+  } else if (repetition.threefold || moveRule.fifty) {
+    // claim draw available
+    game.claimDraw = {
+      white: true,
+      black: true,
+    };
   }
 
   const checkDrawElapsed = Date.now() - checkDrawStart;
@@ -192,14 +199,11 @@ export const updateGameStatus: MiddleWare = async (req, res) => {
 
   if (!game) return res.status(400).send('game not found');
 
-  let activePlayer = false;
-  ['white', 'black'].forEach((color) => {
-    if (
-      req.cookies[`${req.body.gameId}(${color})`] ===
+  const activePlayer = ['white', 'black'].some((color) => {
+    return (
+      req.cookies[`${req.params.gameId}(${color})`] ===
       game[color as 'white' | 'black'].player
-    ) {
-      activePlayer = true;
-    }
+    );
   });
   if (!activePlayer) return res.send("you're not an active player");
 
@@ -219,19 +223,16 @@ export const updateDrawStatus: MiddleWare = async (req, res) => {
 
   if (!game) return res.status(400).send('game not found');
 
-  let activePlayer = false;
-  ['white', 'black'].forEach((color) => {
-    if (
-      req.cookies[`${req.body.gameId}(${color})`] ===
+  const activePlayer = ['white', 'black'].some((color) => {
+    return (
+      req.cookies[`${req.params.gameId}(${color})`] ===
       game[color as 'white' | 'black'].player
-    ) {
-      activePlayer = true;
-    }
+    );
   });
   if (!activePlayer) return res.send("you're not an active player");
 
   const { claimDraw } = req.body;
-
+  console.log(claimDraw);
   game.claimDraw = claimDraw;
 
   await game.save();

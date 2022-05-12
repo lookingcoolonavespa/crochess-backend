@@ -3,7 +3,7 @@ import Game from '../models/Game';
 import { GameInterface } from '../types/interfaces';
 import { MiddleWare } from '../types/types';
 import { io } from '../app';
-import { convertFromMinutesToMs, addTime } from '../utils/timeStuff';
+import { addTime } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
 import { startingPositions, Gameboard, History } from 'crochess-api';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
@@ -52,7 +52,7 @@ export const getGame: MiddleWare = async (req, res, next) => {
   return res.send(game);
 };
 
-export const updateGame: MiddleWare = async (req, res) => {
+export const makeMove: MiddleWare = async (req, res) => {
   const start = Date.now();
 
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
@@ -62,7 +62,7 @@ export const updateGame: MiddleWare = async (req, res) => {
   if (!game.active) res.status(409).send('game is over');
   if (
     // checking id of cookie against playerId
-    // the id of player looks like 'gameId(color)'
+    // the key holding id of player looks like 'gameId(color)'
     req.cookies[`${req.body.gameId}(${game.turn})`] !== game[game.turn].player
   )
     return res.status(409).send('not your turn');
@@ -183,4 +183,56 @@ export const updateGame: MiddleWare = async (req, res) => {
     checkDrawElapsed,
     total: Date.now() - start,
   });
+};
+
+export const updateGameStatus: MiddleWare = async (req, res) => {
+  const game: HydratedDocument<GameInterface> | null = await Game.findById(
+    req.params.gameId
+  );
+
+  if (!game) return res.status(400).send('game not found');
+
+  let activePlayer = false;
+  ['white', 'black'].forEach((color) => {
+    if (
+      req.cookies[`${req.body.gameId}(${color})`] ===
+      game[color as 'white' | 'black'].player
+    ) {
+      activePlayer = true;
+    }
+  });
+  if (!activePlayer) return res.send("you're not an active player");
+
+  const { active, winner, causeOfDeath } = req.body;
+
+  game.active = active;
+  game.winner = winner;
+  game.causeOfDeath = causeOfDeath;
+
+  await game.save();
+};
+
+export const updateDrawStatus: MiddleWare = async (req, res) => {
+  const game: HydratedDocument<GameInterface> | null = await Game.findById(
+    req.params.gameId
+  );
+
+  if (!game) return res.status(400).send('game not found');
+
+  let activePlayer = false;
+  ['white', 'black'].forEach((color) => {
+    if (
+      req.cookies[`${req.body.gameId}(${color})`] ===
+      game[color as 'white' | 'black'].player
+    ) {
+      activePlayer = true;
+    }
+  });
+  if (!activePlayer) return res.send("you're not an active player");
+
+  const { claimDraw } = req.body;
+
+  game.claimDraw = claimDraw;
+
+  await game.save();
 };

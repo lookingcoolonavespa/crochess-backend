@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.get('/', getGameSeeks);
-router.post('/', createGameSeek);
+router.put('/', createGameSeek);
 router.delete('/:id', deleteGameSeek);
 
 export default router;

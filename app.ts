@@ -64,12 +64,12 @@ db.once('open', () => {
     switch (change.operationType) {
       case 'insert': {
         const game = change.fullDocument;
-        io.of('games').emit('newGame', game);
+        io.of('games').emit('newGameSeek', game);
         break;
       }
 
       case 'delete': {
-        io.of('games').emit('deletedGame', change.documentKey);
+        io.of('games').emit('deletedGameSeek', change.documentKey);
       }
     }
   });
@@ -97,7 +97,6 @@ db.once('open', () => {
       case 'update': {
         io.of('games').to(gameId).emit('update', change.fullDocument);
 
-        // begin turn timer
         const { turn, active } = change.fullDocument;
         handleTurnTimer(
           gameId,

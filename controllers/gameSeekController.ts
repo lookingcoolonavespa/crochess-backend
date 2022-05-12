@@ -22,7 +22,7 @@ export const createGameSeek: MiddleWare = async (req, res, next) => {
   return res.json(seek);
 };
 
-export const deleteGameSeek: MiddleWare = async (req, res, next) => {
+export const deleteGameSeek: MiddleWare = async (req, res) => {
   await GameSeek.findByIdAndDelete(req.params.id);
 
   return res.send();

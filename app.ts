@@ -17,7 +17,7 @@ const app = express();
 const server = http.createServer(app);
 export const io = new SocketServer(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'https://crochess-frontend.herokuapp.com',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -95,13 +95,16 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://crochess-frontend.herokuapp.com',
     credentials: true,
   })
 );
 app.use((req, res, next) => {
   // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader(
+    'Access-Control-Allow-Origin',
+    'https://crochess-frontend.herokuapp.com'
+  );
 
   // Request methods you wish to allow
   res.setHeader(

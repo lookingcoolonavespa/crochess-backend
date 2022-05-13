@@ -11,7 +11,7 @@
     "heroku-prebuild": "npm i --only=dev",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node app.ts",
-    "dev": "ts-node-dev app.ts",
+    "dev": "NODE_ENV=dev ts-node-dev app.ts",
     "tsc": "tsc",
     "preinstall": "npx npm-force-resolutions"
   },

@@ -17,7 +17,7 @@ const app = express();
 const server = http.createServer(app);
 export const io = new SocketServer(server, {
   cors: {
-    origin: 'https://crochess-frontend.herokuapp.com',
+    origin: process.env[`FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -92,10 +92,14 @@ db.once('open', () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+console.log(
+  process.env[`FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`],
+  `FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`,
+  process.env.NODE_ENV
+);
 app.use(
   cors({
-    origin: 'https://crochess-frontend.herokuapp.com',
+    origin: process.env[`FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`],
     credentials: true,
   })
 );
@@ -103,7 +107,7 @@ app.use((req, res, next) => {
   // Website you wish to allow to connect
   res.setHeader(
     'Access-Control-Allow-Origin',
-    'https://crochess-frontend.herokuapp.com'
+    process.env[`FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`] as string
   );
 
   // Request methods you wish to allow

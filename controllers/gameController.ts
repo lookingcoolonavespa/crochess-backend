@@ -67,9 +67,15 @@ export const makeMove: MiddleWare = async (req, res) => {
   );
   if (!game) return res.status(400).send('game not found');
   if (!game.active) res.status(409).send('game is over');
+  console.log(
+    req.cookies[`${req.body.gameId}(${game.turn})`],
+    game[game.turn].player
+  );
+
   if (
     // checking id of cookie against playerId
     // the key holding id of player looks like 'gameId(color)'
+
     req.cookies[`${req.body.gameId}(${game.turn})`] !== game[game.turn].player
   )
     return res.status(409).send('not your turn');

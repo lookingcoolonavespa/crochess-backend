@@ -147,4 +147,6 @@ app.use('/games', gameRouter);
 app.use('/gameSeeks', gameSeekRouter);
 
 const portNo = 8000;
-server.listen(portNo, () => console.log(`listening on ${portNo}`));
+server.listen(process.env.PORT || portNo, () =>
+  console.log(`listening on ${portNo}`)
+);

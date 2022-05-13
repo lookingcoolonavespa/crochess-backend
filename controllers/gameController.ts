@@ -36,7 +36,7 @@ export const createGame: MiddleWare = async (req, res) => {
     active: true,
   });
 
-  await GameSeek.findOneAndDelete({ seeker: req.body.challenger });
+  await GameSeek.deleteMany({ seeker: req.body.challenger });
 
   io.of('games').to(req.body.seeker).emit('startGame', {
     cookieId: req.body.seeker,

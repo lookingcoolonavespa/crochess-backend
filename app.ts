@@ -9,7 +9,6 @@ import GameSeek from './models/GameSeek';
 import { install } from 'source-map-support';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import Game from './models/Game';
 import handleTurnTimer from './utils/handleTurnTimer';
 
 install();
@@ -22,26 +21,6 @@ export const io = new SocketServer(server, {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
-
-(async function () {
-  // const gsDeletedCount = await GameSeek.deleteMany({});
-  // console.log(gsDeletedCount);
-  // const gDeletedCount = await Game.deleteMany({});
-  // console.log(gDeletedCount);
-  // const game = new Game({
-  //   white: {
-  //     player: 'ababab',
-  //     timeLeft: Date.now(),
-  //   },
-  //   black: {
-  //     player: 'ababab',
-  //     timeLeft: Date.now(),
-  //   },
-  //   time: 30,
-  //   increment: 10,
-  // });
-  // await game.save();
-})();
 
 io.of('games').on('connection', async (socket) => {
   socket.on('disconnect', async () => {

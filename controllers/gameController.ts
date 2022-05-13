@@ -8,6 +8,7 @@ import initGameboard from '../utils/initGameboard';
 import { startingPositions, Gameboard, History } from 'crochess-api';
 import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { GameboardObj } from 'crochess-api/dist/types/interfaces';
+import GameSeek from '../models/GameSeek';
 
 export const createGame: MiddleWare = async (req, res) => {
   const gameboard = initGameboard(startingPositions.standard);
@@ -34,6 +35,8 @@ export const createGame: MiddleWare = async (req, res) => {
     },
     active: true,
   });
+
+  await GameSeek.findOneAndDelete({ seeker: req.body.challenger });
 
   io.of('games').to(req.body.seeker).emit('startGame', {
     cookieId: req.body.seeker,

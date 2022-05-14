@@ -63,25 +63,16 @@ export const makeMove: MiddleWare = async (req, res) => {
   const start = Date.now();
 
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
-    req.body.gameId
+    req.params.gameId
   );
   if (!game) return res.status(400).send('game not found');
   if (!game.active) res.status(409).send('game is over');
-  console.log(
-    req.cookies[`${req.body.gameId}(${game.turn})`],
-    game[game.turn].player
-  );
 
-  if (
-    // checking id of cookie against playerId
-    // the key holding id of player looks like 'gameId(color)'
-
-    req.cookies[`${req.body.gameId}(${game.turn})`] !== game[game.turn].player
-  )
+  const { playerId, from, to, promote } = req.body;
+  if (playerId !== game[game.turn].player)
     return res.status(409).send('not your turn');
 
   // validate move
-  const { from, to, promote } = req.body;
   const gameboard: GameboardObj = Gameboard(
     game.board,
     game.checks,

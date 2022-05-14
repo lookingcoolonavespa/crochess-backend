@@ -61,7 +61,7 @@ export const getGame: MiddleWare = async (req, res, next) => {
 
 export const makeMove: MiddleWare = async (req, res) => {
   const start = Date.now();
-  console.log(req.body, req.params);
+
   const game: HydratedDocument<GameInterface> | null = await Game.findById(
     req.params.gameId
   );

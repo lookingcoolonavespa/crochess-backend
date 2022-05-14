@@ -92,11 +92,7 @@ db.once('open', () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-console.log(
-  process.env[`FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`],
-  `FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`,
-  process.env.NODE_ENV
-);
+
 app.use(
   cors({
     origin: process.env[`FRONTEND_URL_${process.env.NODE_ENV?.toUpperCase()}`],

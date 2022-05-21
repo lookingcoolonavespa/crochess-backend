@@ -5,22 +5,19 @@ import { MiddleWare } from '../types/types';
 import { addTime } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
 import { startingPositions, Gameboard, History } from 'crochess-api';
-import getWhiteOrBlack from '../utils/getWhiteOrBlack';
 import { GameboardObj } from 'crochess-api/dist/types/interfaces';
 import GameSeek from '../models/GameSeek';
 
-export const createGame: MiddleWare = async (req, res) => {
+export const createGame: MiddleWare = async (req) => {
   const gameboard = initGameboard(startingPositions.standard);
-
-  const seekerColor = getWhiteOrBlack();
 
   const game = new Game({
     white: {
-      player: seekerColor === 'white' ? req.body.seeker : req.body.challenger,
+      player: req.body.white,
       timeLeft: req.body.time,
     },
     black: {
-      player: seekerColor === 'black' ? req.body.seeker : req.body.challenger,
+      player: req.body.black,
       timeLeft: req.body.time,
     },
     board: gameboard.board,

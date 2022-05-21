@@ -15,7 +15,7 @@ axios.put(
   {
       time: the time alotted for each player,
       increment: the time (in seconds) each player gains per move they make,
-      color: the color the seeker wishes to play as
+      color: the color the challenger will play as
       seeker: the socket id of the user creating the seek,
       gameType: the type of game based on the time control selected ie. 'bullet', 'blitz', 'rapid' , etc
    })

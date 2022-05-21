@@ -2,7 +2,6 @@ import { HydratedDocument } from 'mongoose';
 import Game from '../models/Game';
 import { GameInterface } from '../types/interfaces';
 import { MiddleWare } from '../types/types';
-import { io } from '../app';
 import { addTime } from '../utils/timeStuff';
 import initGameboard from '../utils/initGameboard';
 import { startingPositions, Gameboard, History } from 'crochess-api';
@@ -38,19 +37,7 @@ export const createGame: MiddleWare = async (req, res) => {
 
   await GameSeek.deleteMany({ seeker: req.body.challenger });
 
-  io.of('games').to(req.body.seeker).emit('startGame', {
-    cookieId: req.body.seeker,
-    gameId: game._id,
-    color: seekerColor,
-  });
-
   await game.save();
-
-  return res.send({
-    cookieId: req.body.challenger,
-    gameId: game._id.toString(),
-    color: seekerColor === 'white' ? 'black' : 'white',
-  });
 };
 
 export const getGame: MiddleWare = async (req, res, next) => {

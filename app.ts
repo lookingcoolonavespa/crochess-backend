@@ -57,32 +57,33 @@ db.once('open', () => {
     .collection('games')
     .watch([], { fullDocument: 'updateLookup' });
   gamesChangeStream.on('change', (change) => {
+    const doc = change.fullDocument;
+
     if (!change.documentKey) return;
-    if (!change.fullDocument) return;
+    if (!doc) return;
 
     const gameId = JSON.parse(JSON.stringify(change.documentKey))._id;
 
     switch (change.operationType) {
       case 'insert': {
-        const { turn, active } = change.fullDocument;
-        handleTurnTimer(
-          gameId,
-          active,
-          turn,
-          change.fullDocument[turn].timeLeft
-        );
+        ['white', 'black'].forEach((color) => {
+          const playerId = doc[color].player;
+          io.of('games').to(playerId).emit('startGame', {
+            color,
+            gameId,
+            cookieId: playerId,
+          });
+        });
+
+        const { turn, active } = doc;
+        handleTurnTimer(gameId, active, turn, doc[turn].timeLeft);
         break;
       }
       case 'update': {
-        io.of('games').to(gameId).emit('update', change.fullDocument);
+        io.of('games').to(gameId).emit('update', doc);
 
-        const { turn, active } = change.fullDocument;
-        handleTurnTimer(
-          gameId,
-          active,
-          turn,
-          change.fullDocument[turn].timeLeft
-        );
+        const { turn, active } = doc;
+        handleTurnTimer(gameId, active, turn, doc[turn].timeLeft);
         break;
       }
     }

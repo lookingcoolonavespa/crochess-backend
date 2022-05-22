@@ -186,19 +186,21 @@ export const updateGameStatus: MiddleWare = async (req, res) => {
   if (!game) return res.status(400).send('game not found');
 
   const activePlayer = ['white', 'black'].some((color) => {
-    return (
-      req.cookies[`${req.params.gameId}(${color})`] ===
-      game[color as 'white' | 'black'].player
-    );
+    return req.body.playerId === game[color as 'white' | 'black'].player;
   });
   if (!activePlayer) return res.send("you're not an active player");
 
-  const { active, winner, causeOfDeath } = req.body;
+  const { winner, causeOfDeath } = req.body;
 
-  game.active = active;
+  game.active = false;
   game.winner = winner;
   game.causeOfDeath = causeOfDeath;
-  if (!game.active) game.turnStart = undefined;
+
+  if (game.turnStart) {
+    const elapsed = Date.now() - game.turnStart;
+    game[game.turn].timeLeft = game[game.turn].timeLeft - elapsed;
+    game.turnStart = undefined;
+  }
 
   await game.save();
 };
@@ -211,10 +213,7 @@ export const updateDrawStatus: MiddleWare = async (req, res) => {
   if (!game) return res.status(400).send('game not found');
 
   const activePlayer = ['white', 'black'].some((color) => {
-    return (
-      req.cookies[`${req.params.gameId}(${color})`] ===
-      game[color as 'white' | 'black'].player
-    );
+    return req.body.playerId === game[color as 'white' | 'black'].player;
   });
   if (!activePlayer) return res.send("you're not an active player");
 

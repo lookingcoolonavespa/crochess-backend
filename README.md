@@ -69,6 +69,7 @@ axios.put(
   Validates the move and makes the necessary changes to the board. Adjusts time, history, and game state as well. 
   
   **Update game state**
+  
   for claiming draw, resign actions
   ```
   axios.patch(
@@ -81,6 +82,7 @@ axios.put(
   ```
   
   **Update draw status**
+  
   for updating draw availability
   ```
   axios.patch(
